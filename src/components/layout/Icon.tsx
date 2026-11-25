@@ -19,6 +19,8 @@ const paths = {
   down: 'M6 9l6 6 6-6',
   key: 'M14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0M13 13l7 7M17 17l2-2',
   history: 'M12 7v5l3 2M4 12a8 8 0 1 0 2.5-5.8L4 8.5M4 4v4.5h4.5',
+  reports: 'M5 3h14v18H5zM9 17v-4M12 17V8M15 17v-6',
+  download: 'M12 4v11M7 11l5 5 5-5M5 20h14',
   arrowLeft: 'M20 12H4M10 6l-6 6 6 6',
 };
 

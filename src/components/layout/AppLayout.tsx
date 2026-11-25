@@ -98,7 +98,7 @@ export function AppLayout() {
         <main id="main" className="mx-auto max-w-6xl px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 lg:pt-8 lg:pb-12">
           {/* On phones the cash balance scrolls with the page, to leave room for the ledger. */}
           {isOwner && pathname !== '/treasury' && <CashChip className="mb-4 flex! items-center justify-between lg:hidden!" />}
-          <motion.div key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="flex flex-col gap-5">
+          <motion.div key={pathname.startsWith('/reports') ? '/reports' : pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="flex flex-col gap-5">
             <Suspense fallback={<Loading />}>
               <Outlet />
             </Suspense>

@@ -14,6 +14,7 @@ export const NAV: NavItem[] = [
   { to: '/treasury', label: 'الخزنة', short: 'الخزنة', icon: 'treasury', ownerOnly: true },
   { to: '/cheques', label: 'الشيكات', short: 'شيكات', icon: 'cheque' },
   { to: '/income', label: 'قائمة الدخل', short: 'الدخل', icon: 'income', ownerOnly: true },
+  { to: '/reports', label: 'التقارير', short: 'التقارير', icon: 'reports', ownerOnly: true },
 ];
 
 export const USERS_NAV: NavItem = { to: '/users', label: 'المستخدمين', short: 'المستخدمين', icon: 'users', ownerOnly: true };

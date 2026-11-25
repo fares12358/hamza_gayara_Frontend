@@ -16,6 +16,9 @@
   --accent-hover: #163c6c;
   --on-accent: #ffffff;
   --danger: #9f3a34;
+  /* chart series: second one is lighter (light) or darker grey (dark) */
+  --chart-1: #1c4b86;
+  --chart-2: #5b8fd0;
   /* chart mark for late money (validated against --accent) */
   --late: #c0574d;
   --slab-from: #0b0f17;
@@ -39,6 +42,8 @@
   --on-accent: #0a0a0b;
   --danger: #dc958e;
   --late: #c0655c;
+  --chart-1: #e4e4e7;
+  --chart-2: #6e6e78;
   --slab-from: #2a2a2f;
   --slab-mid: #1d1d21;
   --slab-to: #101012;

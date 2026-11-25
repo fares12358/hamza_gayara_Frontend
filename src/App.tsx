@@ -13,6 +13,7 @@ const IncomePage = lazy(() => import('./features/income/IncomePage').then((m) =>
 const InvoicePage = lazy(() => import('./features/invoices/InvoicePage').then((m) => ({ default: m.InvoicePage })));
 const TreasuryPage = lazy(() => import('./features/treasury/TreasuryPage').then((m) => ({ default: m.TreasuryPage })));
 const UsersPage = lazy(() => import('./features/users/UsersPage').then((m) => ({ default: m.UsersPage })));
+const ReportsPage = lazy(() => import('./features/reports/ReportsPage').then((m) => ({ default: m.ReportsPage })));
 const AuditPage = lazy(() => import('./features/audit/AuditPage').then((m) => ({ default: m.AuditPage })));
 
 /** Screen protection only. The server checks every request again. */
@@ -42,6 +43,7 @@ export function App() {
           <Route path="invoices" element={<InvoicePage />} />
           <Route path="treasury" element={<TreasuryPage />} />
           <Route path="income" element={<IncomePage />} />
+          <Route path="reports/:tab?" element={<ReportsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="audit" element={<AuditPage />} />
         </Route>
