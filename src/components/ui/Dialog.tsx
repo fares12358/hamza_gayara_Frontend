@@ -31,7 +31,7 @@ export function Dialog({ open, onClose, title, children }: {
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.18 }}
-        className="rounded-3xl border border-line bg-surface p-5"
+        className="max-h-[85dvh] overflow-y-auto rounded-3xl border border-line bg-surface p-5"
       >
         <h2 className="mb-3 text-lg">{title}</h2>
         {children}

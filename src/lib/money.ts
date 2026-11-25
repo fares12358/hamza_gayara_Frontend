@@ -9,11 +9,15 @@ export const formatMoney = (piasters: number) => formatter.format(piasters / 100
  * Empty text is 0. Anything unclear returns null: it is never guessed.
  */
 export function parseMoney(text: string, { allowNegative = false } = {}): number | null {
-  const clean = text
+  const typed = text
     .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
     .replace(/٫/g, '.')
-    .replace(/[٬,\s]/g, '');
-  if (clean === '') return 0;
+    .replace(/٬/g, ',')
+    .trim();
+  if (typed === '') return 0;
+  // "12,50" or "1 5" must never turn into 1250 or 15: commas are allowed only between groups of three.
+  if (/\s/.test(typed) || (typed.includes(',') && !/^-?\d{1,3}(,\d{3})+(\.\d{1,2})?$/.test(typed))) return null;
+  const clean = typed.replace(/,/g, '');
   const match = clean.match(/^(-?)(\d{1,10})(?:\.(\d{1,2}))?$/);
   if (!match || (match[1] && !allowNegative)) return null;
   const value = Number(match[2]) * 100 + Number((match[3] ?? '').padEnd(2, '0'));

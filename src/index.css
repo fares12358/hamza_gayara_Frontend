@@ -8,6 +8,8 @@
   --surface: #ffffff;
   --raised: #eaeef5;
   --line: #dbe1ea;
+  /* borders of inputs: 3:1 against the page */
+  --field: #7b8699;
   --ink: #0b0f17;
   --muted: #566174;
   --accent: #1c4b86;
@@ -29,6 +31,7 @@
   --surface: #131315;
   --raised: #1d1d20;
   --line: #2b2b30;
+  --field: #6e6e78;
   --ink: #f4f4f5;
   --muted: #a2a2ab;
   --accent: #f4f4f5;
@@ -47,6 +50,7 @@
   --color-surface: var(--surface);
   --color-raised: var(--raised);
   --color-line: var(--line);
+  --color-field: var(--field);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-accent: var(--accent);

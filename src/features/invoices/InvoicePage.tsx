@@ -26,7 +26,7 @@ export function InvoicePage() {
   const [customerId, setCustomerId] = useState('');
   const [date, setDate] = useState(todayIso);
   const [form, setForm] = useState(EMPTY);
-  const { saving, submit, backdated } = useSafeSubmit();
+  const { saving, submit, confirm } = useSafeSubmit();
 
   const customers = useApi(customersApi.list, 'customers');
   const recent = useApi(() => entriesApi.recent(['invoice', 'cash_sale']), 'recent-invoices');
@@ -53,6 +53,7 @@ export function InvoicePage() {
       if (returned > amount) return toast('المرتجع أكبر من الفاتورة', 'error');
     }
     void submit(
+      [mode, mode === 'cash' ? '' : customerId, date, amount, returned, paid, form.permitNo, form.note],
       (safe) =>
         mode === 'cash'
           ? entriesApi.createCash({ type: 'cash_sale', date, amount, note: form.note, ...safe })
@@ -121,7 +122,7 @@ export function InvoicePage() {
       <AsyncView state={recent}>
         {(entries) => <RecentEntries title="آخر الفواتير اللي اتسجلت من التطبيق" entries={entries} onChanged={reload} />}
       </AsyncView>
-      <ConfirmDialog title="تاريخ قديم" confirmLabel="أيوه، سجّلها" {...backdated} />
+      <ConfirmDialog {...confirm} />
     </>
   );
 }

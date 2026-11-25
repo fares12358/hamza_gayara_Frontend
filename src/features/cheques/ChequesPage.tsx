@@ -1,6 +1,7 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { chequesApi } from '../../api/cheques';
 import { BalancePreview } from '../../components/ui/BalancePreview';
+import { Button } from '../../components/ui/Button';
 import { CancelEntryButton } from '../../components/ui/CancelEntryButton';
 import { ChequePhotoButton } from '../../components/ui/ChequePhotoButton';
 import { CustomerPicker } from '../../components/ui/CustomerPicker';
@@ -30,10 +31,13 @@ export function ChequesPage() {
   const [form, setForm] = useState(EMPTY);
   const [photoName, setPhotoName] = useState('');
   const photo = useRef<HTMLInputElement>(null);
-  const { saving, submit, backdated } = useSafeSubmit();
+  const { saving, submit, confirm } = useSafeSubmit();
 
   const customers = useApi(chequesApi.customerOptions, 'cheque-customers');
-  const cheques = useApi(chequesApi.list, 'cheques');
+  const [limit, setLimit] = useState(50);
+  const cheques = useApi(() => chequesApi.list(limit), 'cheques');
+  const reloadCheques = cheques.reload;
+  useEffect(() => reloadCheques(), [limit, reloadCheques]);
   const reload = () => {
     customers.reload();
     cheques.reload();
@@ -60,6 +64,7 @@ export function ChequesPage() {
       }
     }
     void submit(
+      { ...form, amount, customerId, date, image },
       (safe) => chequesApi.create({ ...form, amount, customerId, date, image, ...safe }),
       () => {
         setForm(EMPTY);
@@ -108,18 +113,20 @@ export function ChequesPage() {
               <Input label="تاريخ الاستحقاق (اختياري)" type="date" value={form.dueDate} onValue={set('dueDate')} hint={form.dueDate ? formatLongDate(form.dueDate) : undefined} />
               <Input label="ملاحظة (اختياري)" value={form.note} onValue={set('note')} autoComplete="off" />
             </FormGrid>
-            <label className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-bg px-4 py-3 text-center text-sm font-semibold focus-within:outline-2 focus-within:outline-accent hover:bg-raised">
+            <label className="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-field bg-bg px-4 py-3 text-center text-sm font-semibold focus-within:outline-2 focus-within:outline-accent hover:bg-raised">
               <span className="min-w-0 break-all">{photoName || 'صوّر الشيك أو اختار صورته (اختياري)'}</span>
-              <input ref={photo} type="file" accept="image/*" aria-label="صورة الشيك" className="sr-only" onChange={(e) => setPhotoName(e.target.files?.[0]?.name ?? '')} />
+              <input ref={photo} type="file" accept="image/*" aria-label="رفع صورة الشيك" className="sr-only" onChange={(e) => setPhotoName(e.target.files?.[0]?.name ?? '')} />
             </label>
           </EntryForm>
         )}
       </AsyncView>
       <h2 className="mt-2 text-lg">آخر الشيكات</h2>
       <AsyncView state={cheques}>
-        {(list) => (
+        {({ cheques: list, total }) => (
+          <>
           <DataTable
             caption="آخر الشيكات"
+            pageSize={2000}
             rows={list}
             rowKey={(c) => c.id}
             empty="لسه مفيش شيكات اتسجلت"
@@ -141,9 +148,15 @@ export function ChequesPage() {
               { header: '', numeric: true, cell: actions },
             ]}
           />
+          {list.length < total && limit < 2000 && (
+            <Button onClick={() => setLimit((n) => Math.min(2000, n + 50))}>
+              عرض شيكات أقدم (<span className="num">{list.length}</span> من <span className="num">{total}</span>)
+            </Button>
+          )}
+          </>
         )}
       </AsyncView>
-      <ConfirmDialog title="تاريخ قديم" confirmLabel="أيوه، سجّله" {...backdated} />
+      <ConfirmDialog {...confirm} />
     </>
   );
 }

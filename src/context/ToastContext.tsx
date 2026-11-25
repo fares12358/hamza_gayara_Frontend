@@ -11,10 +11,17 @@ export const useToast = () => useContext(ToastContext);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<{ message: string; tone: Tone } | null>(null);
   const timer = useRef<number>(undefined);
+  const layer = useRef<HTMLDivElement>(null);
 
   const show = useCallback<ShowToast>((message, tone = 'info') => {
     window.clearTimeout(timer.current);
     setToast({ message, tone });
+    // Opening again puts the message above any dialog opened since last time.
+    const box = layer.current;
+    if (box?.showPopover) {
+      if (box.matches(':popover-open')) box.hidePopover();
+      box.showPopover();
+    }
     timer.current = window.setTimeout(() => setToast(null), tone === 'error' ? 7000 : 3000);
   }, []);
 
@@ -22,8 +29,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={show}>
       {children}
       <div
+        ref={layer}
+        popover="manual"
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-60 flex justify-center lg:bottom-6"
+        className="pointer-events-none fixed inset-x-4 top-auto bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-60 m-0 flex w-auto justify-center overflow-visible border-0 bg-transparent p-0 lg:bottom-6"
       >
         <AnimatePresence>
           {toast && (

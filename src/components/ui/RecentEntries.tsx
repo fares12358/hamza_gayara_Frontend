@@ -11,6 +11,8 @@ export const ENTRY_LABELS: Record<EntryType, string> = {
   cash_sale: 'بيع نقدي',
   expense: 'مصروف',
   transfer: 'تحويل للعبور',
+  debt_add: 'تسوية بالزيادة',
+  debt_reduce: 'تسوية بالخصم',
 };
 
 const describe = (e: Entry) =>

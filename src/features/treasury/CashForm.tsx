@@ -31,7 +31,7 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
   const [date, setDate] = useState(todayIso);
   const [amountText, setAmountText] = useState('');
   const [note, setNote] = useState('');
-  const { saving, submit, backdated } = useSafeSubmit();
+  const { saving, submit, confirm } = useSafeSubmit();
 
   const customers = useApi(customersApi.list, 'customers');
   const categories = useApi(entriesApi.categories, 'categories');
@@ -52,6 +52,7 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
       : { ...base, type: mode };
 
     void submit(
+      input,
       (safe) => entriesApi.createCash({ ...input, ...safe }),
       () => {
         setAmountText('');
@@ -101,7 +102,7 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
         </FormGrid>
         <Input label={mode === 'expense' ? 'البيان (مثال: فاتورة كهرباء)' : 'ملاحظة (اختياري)'} value={note} onValue={setNote} autoComplete="off" />
       </EntryForm>
-      <ConfirmDialog title="تاريخ قديم" confirmLabel="أيوه، سجّلها" {...backdated} />
+      <ConfirmDialog {...confirm} />
     </>
   );
 }

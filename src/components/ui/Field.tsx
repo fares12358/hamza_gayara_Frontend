@@ -43,7 +43,7 @@ export function Input({ label, error, hint, icon, suffix, onValue, className, ty
           aria-invalid={Boolean(error)}
           aria-describedby={error || hint ? `${id}-note` : undefined}
           onChange={(e) => onValue?.(e.target.value)}
-          className={`${control} ${error ? 'border-danger' : 'border-line'} ${type === 'date' ? '[direction:ltr] text-right' : ''} ${icon ? 'ps-10' : ''} ${suffix ? 'pe-12' : ''}`}
+          className={`${control} ${error ? 'border-danger' : 'border-field'} ${type === 'date' ? '[direction:ltr] text-right' : ''} ${icon ? 'ps-10' : ''} ${suffix ? 'pe-12' : ''}`}
           {...rest}
         />
         {suffix && <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-sm text-muted">{suffix}</span>}
@@ -67,7 +67,7 @@ export function MoneyInput({ value, allowNegative, ...rest }: InputProps & { val
       placeholder="0"
       suffix="ج.م"
       value={value}
-      error={parsed === null ? 'اكتب رقم صحيح، وبحد أقصى رقمين بعد العلامة' : undefined}
+      error={parsed === null ? 'رقم غير صحيح. للكسور استخدم النقطة، زي 12.50' : undefined}
       hint={parsed ? <span className="num font-semibold text-ink">{formatMoney(parsed)}</span> : undefined}
       {...rest}
     />
@@ -93,7 +93,7 @@ export function DateField({ label, value, onValue }: { label: string; value: str
             type="button"
             aria-pressed={value === q.date}
             onClick={() => onValue(q.date)}
-            className="min-h-11 rounded-full border border-line px-4 text-sm font-semibold text-muted aria-pressed:border-accent aria-pressed:bg-raised aria-pressed:text-ink"
+            className="min-h-11 rounded-full border border-field px-4 text-sm font-semibold text-muted aria-pressed:border-accent aria-pressed:bg-raised aria-pressed:text-ink"
           >
             {q.text}
           </button>
@@ -113,7 +113,7 @@ export function Select({ label, options, onValue, className, ...rest }: SelectPr
   const id = useId();
   return (
     <Wrapper id={id} label={label} className={className}>
-      <select id={id} className={`${control} border-line`} onChange={(e) => onValue(e.target.value)} {...rest}>
+      <select id={id} className={`${control} border-field`} onChange={(e) => onValue(e.target.value)} {...rest}>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

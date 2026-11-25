@@ -5,6 +5,15 @@ import type { Entry, EntryType } from '../types';
 export interface SafeWrite {
   requestId: string;
   confirmBackdated: boolean;
+  confirmUnusual: boolean;
+}
+
+export interface AdjustmentInput {
+  customerId: string;
+  direction: 'add' | 'reduce';
+  amount: number;
+  date: string;
+  note: string;
 }
 
 export interface InvoiceInput {
@@ -30,5 +39,6 @@ export const entriesApi = {
     http.get<{ entries: Entry[] }>('/entries', { params: { types: types.join(','), limit } }).then((r) => r.data.entries),
   createInvoice: (body: InvoiceInput & SafeWrite) => http.post('/entries/invoice', body),
   createCash: (body: CashInput & SafeWrite) => http.post('/entries/cash', body),
+  createAdjustment: (body: AdjustmentInput & SafeWrite) => http.post('/entries/adjustment', body),
   cancel: (id: string, reason = '') => http.post(`/entries/${id}/void`, { reason }),
 };

@@ -9,7 +9,7 @@ export interface User {
   active: boolean;
 }
 
-export type EntryType = 'invoice' | 'payment' | 'cheque' | 'cash_sale' | 'expense' | 'transfer';
+export type EntryType = 'invoice' | 'payment' | 'cheque' | 'cash_sale' | 'expense' | 'transfer' | 'debt_add' | 'debt_reduce';
 
 export interface Entry {
   id: string;
@@ -61,10 +61,12 @@ export interface StatementRow {
   balance: number;
   note?: string;
   imageId?: string;
+  /** Typed after newer records: shown in the order it was added to the balance. */
+  outOfOrder?: boolean;
 }
 
 export interface Statement {
-  customer: CustomerSummary & { source: 'sheet' | 'app' };
+  customer: CustomerSummary & { source: 'sheet' | 'app'; archived: boolean };
   openingBalance: number;
   previousBalance: number | null;
   from: string;
@@ -110,4 +112,24 @@ export interface IncomeReport {
   year: string;
   yearRows: { month: string; netSales: number; expensesTotal: number; net: number }[];
   cashAsOf: string;
+}
+
+export interface AuditRecord {
+  id: string;
+  at: string;
+  userName: string;
+  action: string;
+  entity: string;
+  data: {
+    type?: string;
+    amount?: number;
+    date?: string;
+    category?: string;
+    note?: string;
+    reason?: string;
+    name?: string;
+    username?: string;
+    customerName?: string;
+    passwordChanged?: boolean;
+  };
 }

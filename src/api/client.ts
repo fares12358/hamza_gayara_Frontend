@@ -15,7 +15,7 @@ export const UNAUTHORIZED_EVENT = 'gayara:unauthorized';
 
 export const DATA_CHANGED_EVENT = 'gayara:data-changed';
 
-export const http = axios.create({ baseURL: API_BASE_URL, timeout: 20_000, withCredentials: true });
+export const http = axios.create({ baseURL: API_BASE_URL, timeout: 45_000, withCredentials: true });
 
 http.interceptors.response.use(
   (response) => {

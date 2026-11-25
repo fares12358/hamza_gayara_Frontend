@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { usersApi } from '../../api/users';
 import { Button } from '../../components/ui/Button';
 import { DataTable, LedgerLine } from '../../components/ui/DataTable';
@@ -60,7 +61,10 @@ export function UsersPage() {
 
   return (
     <>
-      <PageHeader title="المستخدمين" />
+      <PageHeader
+        title="المستخدمين"
+        actions={<Link to="/audit" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-surface px-4 font-semibold hover:bg-raised">سجل العمليات</Link>}
+      />
       <Card title="مستخدم جديد">
         <form onSubmit={add} className="flex flex-col gap-4">
           <FormGrid>

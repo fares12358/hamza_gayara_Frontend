@@ -12,13 +12,14 @@ import { daysAgoIso, formatDate, formatLongDate, todayIso } from '../../lib/date
 import type { CashLedgerRow } from '../../types';
 import { CashForm } from './CashForm';
 
-type Range = 'week' | 'month' | 'days30' | 'year';
+type Range = 'week' | 'month' | 'days30' | 'year' | 'all';
 
 const fromDate: Record<Range, () => string> = {
   week: () => daysAgoIso(7),
   month: () => `${todayIso().slice(0, 8)}01`,
   days30: () => daysAgoIso(30),
   year: () => `${todayIso().slice(0, 4)}-01-01`,
+  all: () => '',
 };
 
 export function TreasuryPage() {
@@ -54,6 +55,7 @@ export function TreasuryPage() {
                     { value: 'month', label: 'الشهر ده' },
                     { value: 'days30', label: '30 يوم' },
                     { value: 'year', label: 'السنة دي' },
+                    { value: 'all', label: 'الكل' },
                   ]}
                 />
               </div>

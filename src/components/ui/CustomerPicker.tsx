@@ -83,7 +83,7 @@ export function CustomerPicker({ customers, value, onChange, label = 'العمي
             show();
             if (value) onChange('');
           }}
-          className="min-h-12 w-full rounded-xl border border-line bg-bg ps-10 pe-10 text-base font-semibold placeholder:font-normal placeholder:text-muted/70"
+          className="min-h-12 w-full rounded-xl border border-field bg-bg ps-10 pe-10 text-base font-semibold placeholder:font-normal placeholder:text-muted/70"
         />
         <Icon name="down" className="pointer-events-none absolute inset-y-0 end-3 my-auto size-4 text-muted" />
       </div>

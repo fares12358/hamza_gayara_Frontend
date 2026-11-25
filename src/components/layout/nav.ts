@@ -17,3 +17,4 @@ export const NAV: NavItem[] = [
 ];
 
 export const USERS_NAV: NavItem = { to: '/users', label: 'المستخدمين', short: 'المستخدمين', icon: 'users', ownerOnly: true };
+export const AUDIT_NAV: NavItem = { to: '/audit', label: 'سجل العمليات', short: 'السجل', icon: 'history', ownerOnly: true };

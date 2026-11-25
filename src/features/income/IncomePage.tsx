@@ -110,7 +110,7 @@ export function IncomePage() {
                   />
                 )}
                 columns={[
-                  { header: 'الشهر', cell: (r) => <button type="button" onClick={() => setMonth(r.month)} className="min-h-8 font-semibold text-accent underline-offset-4 hover:underline">{monthName(r.month)}</button> },
+                  { header: 'الشهر', cell: (r) => <button type="button" onClick={() => setMonth(r.month)} className="min-h-11 font-semibold text-accent underline-offset-4 hover:underline">{monthName(r.month)}</button> },
                   { header: 'مقارنة صافي المبيعات', cell: (r) => <div className="w-40 lg:w-64"><ShareBar value={r.netSales} max={bestSales} /></div> },
                   { header: 'صافي المبيعات', numeric: true, cell: (r) => <Money value={r.netSales} /> },
                   { header: 'المصروفات', numeric: true, cell: (r) => <Money value={r.expensesTotal} /> },

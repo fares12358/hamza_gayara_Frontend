@@ -17,6 +17,8 @@ const paths = {
   right: 'M9 5l7 7-7 7',
   left: 'M15 5l-7 7 7 7',
   down: 'M6 9l6 6 6-6',
+  key: 'M14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0M13 13l7 7M17 17l2-2',
+  history: 'M12 7v5l3 2M4 12a8 8 0 1 0 2.5-5.8L4 8.5M4 4v4.5h4.5',
   arrowLeft: 'M20 12H4M10 6l-6 6 6 6',
 };
 

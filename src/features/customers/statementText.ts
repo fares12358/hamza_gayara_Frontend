@@ -8,9 +8,9 @@ export function statementText({ customer, rows }: Statement) {
     [
       formatDate(r.date),
       r.permitNo && (r.type === 'cheque' ? `شيك ${r.permitNo}` : `إذن ${r.permitNo}`),
-      r.invoiceAmount && `فاتورة ${formatMoney(r.invoiceAmount)}`,
+      r.invoiceAmount && `${r.type === 'debt_add' ? 'تسوية بالزيادة' : 'فاتورة'} ${formatMoney(r.invoiceAmount)}`,
       r.returnAmount && `مرتجع ${formatMoney(r.returnAmount)}`,
-      r.paymentAmount && `دفعة ${formatMoney(r.paymentAmount)}`,
+      r.paymentAmount && `${r.type === 'debt_reduce' ? 'تسوية بالخصم' : 'دفعة'} ${formatMoney(r.paymentAmount)}`,
       `الرصيد ${formatMoney(r.balance)}`,
     ]
       .filter(Boolean)

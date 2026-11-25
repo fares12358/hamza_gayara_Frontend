@@ -1,12 +1,15 @@
 import { motion } from 'framer-motion';
+import { Suspense, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import { Button } from '../ui/Button';
+import { Loading } from '../ui/States';
+import { ChangePasswordDialog } from '../../features/account/ChangePasswordDialog';
 import { CashChip } from './CashChip';
 import { Icon } from './Icon';
-import { NAV, USERS_NAV } from './nav';
+import { AUDIT_NAV, NAV, USERS_NAV } from './nav';
 import { StatusBanners } from './StatusBanners';
 
 function Brand() {
@@ -22,8 +25,13 @@ function AccountButtons() {
   const { logout } = useAuth();
   const { theme, toggle } = useTheme();
   const toast = useToast();
+  const [changing, setChanging] = useState(false);
   return (
     <>
+      <Button variant="ghost" size="icon" aria-label="تغيير كلمة السر" onClick={() => setChanging(true)}>
+        <Icon name="key" />
+      </Button>
+      <ChangePasswordDialog open={changing} onClose={() => setChanging(false)} />
       <Button variant="ghost" size="icon" onClick={toggle} aria-label={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}>
         <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
       </Button>
@@ -50,7 +58,7 @@ export function AppLayout() {
         <Brand />
         {isOwner && <CashChip />}
         <nav aria-label="القائمة الرئيسية" className="flex flex-col gap-1">
-          {[...items, ...(isOwner ? [USERS_NAV] : [])].map((n) => (
+          {[...items, ...(isOwner ? [USERS_NAV, AUDIT_NAV] : [])].map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -91,7 +99,9 @@ export function AppLayout() {
           {/* On phones the cash balance scrolls with the page, to leave room for the ledger. */}
           {isOwner && pathname !== '/treasury' && <CashChip className="mb-4 flex! items-center justify-between lg:hidden!" />}
           <motion.div key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="flex flex-col gap-5">
-            <Outlet />
+            <Suspense fallback={<Loading />}>
+              <Outlet />
+            </Suspense>
           </motion.div>
         </main>
       </div>

@@ -15,7 +15,8 @@ export interface ChequeInput {
 }
 
 export const chequesApi = {
-  list: () => http.get<{ cheques: Entry[] }>('/cheques').then((r) => r.data.cheques),
+  list: (limit: number) =>
+    http.get<{ cheques: Entry[]; total: number }>('/cheques', { params: { limit } }).then((r) => r.data),
   customerOptions: () =>
     http.get<{ customers: CustomerOption[] }>('/cheques/customer-options').then((r) => r.data.customers),
   create: (body: ChequeInput & SafeWrite) => http.post('/cheques', body, { timeout: 60_000 }),

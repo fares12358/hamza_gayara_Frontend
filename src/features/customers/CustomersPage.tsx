@@ -14,6 +14,7 @@ import { matchesName } from '../../lib/arabic';
 import { formatDate } from '../../lib/dates';
 import { SETTLED } from '../../lib/money';
 import type { CustomerSummary } from '../../types';
+import { ArchivedCustomers } from './ArchivedCustomers';
 import { CustomerList } from './CustomerList';
 import { DebtLeaders } from './DebtLeaders';
 import { NewCustomerForm } from './NewCustomerForm';
@@ -41,6 +42,7 @@ export function CustomersPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<Sort>('balance');
   const [adding, setAdding] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   return (
     <>
@@ -123,6 +125,14 @@ export function CustomersPage() {
           );
         }}
       </AsyncView>
+      {isOwner && (
+        <>
+          <Button variant="ghost" className="self-start" aria-expanded={showArchived} onClick={() => setShowArchived((v) => !v)}>
+            {showArchived ? 'إخفاء العملاء المؤرشفين' : 'العملاء المؤرشفين'}
+          </Button>
+          {showArchived && <ArchivedCustomers />}
+        </>
+      )}
     </>
   );
 }
