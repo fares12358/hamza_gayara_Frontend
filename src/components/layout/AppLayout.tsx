@@ -11,6 +11,7 @@ import { CashChip } from './CashChip';
 import { Icon } from './Icon';
 import { AUDIT_NAV, NAV, USERS_NAV } from './nav';
 import { StatusBanners } from './StatusBanners';
+import { InstallCard, useInstallAction } from '../pwa/InstallCard';
 
 function Brand() {
   return (
@@ -18,6 +19,21 @@ function Brand() {
       <img src="/icon.svg" alt="" className="size-9 rounded-lg" />
       <span className="font-display text-2xl font-bold">الجيارة</span>
     </span>
+  );
+}
+
+function InstallButton() {
+  const action = useInstallAction();
+  return (
+    <>
+      {action.available && (
+        <Button onClick={action.start}>
+          <Icon name="download" className="size-4" />
+          تثبيت التطبيق
+        </Button>
+      )}
+      {action.dialog}
+    </>
   );
 }
 
@@ -72,7 +88,10 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="mt-auto flex items-center gap-1 border-t border-line pt-3">
+        <div className="mt-auto flex flex-col gap-2">
+          <InstallButton />
+        </div>
+        <div className="flex items-center gap-1 border-t border-line pt-3">
           <p className="me-auto min-w-0">
             <span className="block truncate text-sm font-semibold">{user?.name}</span>
             <span className="block text-xs text-muted">{isOwner ? 'مالك' : 'موظف'}</span>
@@ -95,9 +114,10 @@ export function AppLayout() {
         </header>
         <StatusBanners />
 
-        <main id="main" className="mx-auto max-w-6xl px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 lg:pt-8 lg:pb-12">
+        <main id="main" className="w-full px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
           {/* On phones the cash balance scrolls with the page, to leave room for the ledger. */}
           {isOwner && pathname !== '/treasury' && <CashChip className="mb-4 flex! items-center justify-between lg:hidden!" />}
+          {pathname === '/' && <InstallCard className="mb-5" />}
           <motion.div key={pathname.startsWith('/reports') ? '/reports' : pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="flex flex-col gap-5">
             <Suspense fallback={<Loading />}>
               <Outlet />

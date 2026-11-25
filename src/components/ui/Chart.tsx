@@ -47,7 +47,8 @@ export function Chart({ title, labels, series, type = 'bar', horizontal = false,
       const values = { grid: { color: grid }, border: { display: false }, ticks: { color: ink, font, callback: (v: string | number) => compact.format(Number(v)) } };
       const nameTicks = { color: ink, font, autoSkip: !horizontal, maxRotation: 0 };
       // Names beside the bars are shortened to fit narrow screens. The tooltip shows the full name.
-      const limit = canvas.current.clientWidth < 420 ? 18 : 40;
+      // The card is measured: the canvas has no final size yet.
+      const limit = (canvas.current.parentElement?.clientWidth ?? 0) < 420 ? 18 : 40;
       const shorten = (value: string | number) => {
         const name = labels[Number(value)] ?? '';
         return name.length > limit ? `${name.slice(0, limit)}…` : name;

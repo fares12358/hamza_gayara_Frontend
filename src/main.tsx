@@ -1,3 +1,5 @@
+// First: the browser may offer installation very early.
+import './lib/pwaInstall';
 import { StrictMode } from 'react';
 import { MotionConfig } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
@@ -9,6 +11,7 @@ import '@fontsource/ibm-plex-sans-arabic/500.css';
 import '@fontsource/ibm-plex-sans-arabic/600.css';
 import './index.css';
 import { App } from './App';
+import { UpdateCard } from './components/pwa/UpdateCard';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -18,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
     <MotionConfig reducedMotion="user">
     <ThemeProvider>
       <ToastProvider>
+        <UpdateCard />
         <AuthProvider>
           <BrowserRouter>
             <App />

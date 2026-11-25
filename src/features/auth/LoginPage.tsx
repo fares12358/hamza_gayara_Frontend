@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
+import { InstallCard } from '../../components/pwa/InstallCard';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Field';
 import { useAuth } from '../../context/AuthContext';
@@ -31,7 +32,7 @@ export function LoginPage() {
         <h1 className="text-5xl lg:text-7xl">الجيارة</h1>
         <p className="max-w-sm opacity-80 lg:text-lg">دفتر الحسابات: مديونيات العملاء، الخزنة، الشيكات وقائمة الدخل.</p>
       </section>
-      <div className="flex items-start justify-center p-6 lg:items-center">
+      <div className="flex flex-col items-center justify-start gap-6 p-6 lg:justify-center">
         <motion.form
           onSubmit={onSubmit}
           initial={{ opacity: 0, y: 12 }}
@@ -54,6 +55,7 @@ export function LoginPage() {
             دخول
           </Button>
         </motion.form>
+        <InstallCard className="w-full max-w-sm" />
       </div>
     </main>
   );

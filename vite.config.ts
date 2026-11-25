@@ -8,6 +8,8 @@ export default defineConfig(({ mode }) => {
   const proxy = { '/api': { target: env.API_PROXY_TARGET || 'http://localhost:5000' } };
 
   return {
+    // Changes with every build: used to say "the app was updated".
+    define: { __APP_BUILD__: JSON.stringify(new Date().toISOString()) },
     server: { port: 5173, proxy },
     preview: { port: 4173, proxy },
     plugins: [
@@ -17,6 +19,7 @@ export default defineConfig(({ mode }) => {
         registerType: 'prompt',
         includeAssets: ['icon.svg', 'apple-touch-icon.png'],
         manifest: {
+            id: '/',
           name: 'الجيارة - الحسابات',
           short_name: 'الجيارة',
           description: 'حسابات العملاء والخزنة والشيكات',
