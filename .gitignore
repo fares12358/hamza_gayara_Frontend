@@ -9,9 +9,10 @@ dev-dist/
 *.tsbuildinfo
 .vite/
 
-# environment files
+# environment files: only the example is committed
 .env
 .env.*
+*.local
 !.env.example
 
 # REAL BUSINESS DATA: never commit.

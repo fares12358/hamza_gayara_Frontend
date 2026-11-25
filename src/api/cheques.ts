@@ -1,4 +1,5 @@
 import { http } from './client';
+import { API_BASE_URL } from './config';
 import type { SafeWrite } from './entries';
 import type { CustomerOption, Entry } from '../types';
 
@@ -18,5 +19,5 @@ export const chequesApi = {
   customerOptions: () =>
     http.get<{ customers: CustomerOption[] }>('/cheques/customer-options').then((r) => r.data.customers),
   create: (body: ChequeInput & SafeWrite) => http.post('/cheques', body, { timeout: 60_000 }),
-  imageUrl: (id: string) => `/api/cheques/images/${id}`,
+  imageUrl: (id: string) => `${API_BASE_URL}/cheques/images/${id}`,
 };
