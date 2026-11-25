@@ -1,0 +1,39 @@
+# This folder is its own git repository: the .gitignore above it does not apply here.
+
+# dependencies
+node_modules/
+
+# build output (rebuilt with "npm run build")
+dist/
+dev-dist/
+*.tsbuildinfo
+.vite/
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# REAL BUSINESS DATA: never commit.
+# *.html is not ignored here because index.html belongs to the app,
+# so the old accounting HTML file is blocked by its name.
+الجيارة*.html
+backup/
+exports/
+dump/
+*.xlsx
+*.xls
+*.csv
+
+# logs and test output
+logs/
+*.log
+coverage/
+
+# editor and system files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

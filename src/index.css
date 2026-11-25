@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+/* Color tokens. Components use only these, never hex values. */
+:root {
+  color-scheme: light;
+  /* light: white, black, deep blue */
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --raised: #eaeef5;
+  --line: #dbe1ea;
+  --ink: #0b0f17;
+  --muted: #566174;
+  --accent: #1c4b86;
+  --accent-hover: #163c6c;
+  --on-accent: #ffffff;
+  --danger: #9f3a34;
+  /* chart mark for late money (validated against --accent) */
+  --late: #c0574d;
+  --slab-from: #0b0f17;
+  --slab-mid: #142c4e;
+  --slab-to: #1c4b86;
+  --on-slab: #ffffff;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  /* dark: black and charcoal layers with white */
+  --bg: #0a0a0b;
+  --surface: #131315;
+  --raised: #1d1d20;
+  --line: #2b2b30;
+  --ink: #f4f4f5;
+  --muted: #a2a2ab;
+  --accent: #f4f4f5;
+  --accent-hover: #d9d9de;
+  --on-accent: #0a0a0b;
+  --danger: #dc958e;
+  --late: #c0655c;
+  --slab-from: #2a2a2f;
+  --slab-mid: #1d1d21;
+  --slab-to: #101012;
+  --on-slab: #ffffff;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-late: var(--late);
+  --color-on-slab: var(--on-slab);
+  --font-sans: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+  --font-display: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg font-sans text-ink antialiased;
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-bold;
+  }
+  h1,
+  h2 {
+    text-wrap: balance;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* The one signature surface: a smooth gradient panel for the key figure. */
+  .slab {
+    background: linear-gradient(135deg, var(--slab-from) 0%, var(--slab-mid) 52%, var(--slab-to) 100%);
+    color: var(--on-slab);
+    border: 1px solid color-mix(in srgb, var(--on-slab) 10%, transparent);
+  }
+}
+
+/* Numbers read left to right and line up in columns. */
+@utility num {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
