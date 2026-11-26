@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BalanceSlab } from '../../components/ui/BalanceSlab';
 import { Chart } from '../../components/ui/Chart';
-import { Select } from '../../components/ui/Field';
 import { Money } from '../../components/ui/Money';
+import { Select } from '../../components/ui/Select';
 import { SheetTable } from '../../components/ui/SheetTable';
 import { monthName } from '../../lib/dates';
 import type { ReportParams } from '../../types/reports';
@@ -17,6 +17,7 @@ export function ExpensesTab() {
   const loaded = state.data?.options.years;
   if (loaded && loaded.join() !== years.join()) setYears(loaded);
   const year = params.year ?? state.data?.report.year ?? '';
+  const yearOptions = useMemo(() => years.map((y) => ({ value: y, label: y })), [years]);
 
   return (
     <ReportFrame
@@ -25,7 +26,7 @@ export function ExpensesTab() {
       state={state}
       fileName={(r) => `مصاريف الجياره ${r.year}`}
       exportParams={(r) => ({ year: r.year })}
-      filters={years.length > 0 && <Select label="السنة" value={year} onValue={(y) => setParams({ year: y })} options={years.map((y) => ({ value: y, label: y }))} className="w-32" />}
+      filters={years.length > 0 && <Select label="السنة" value={year} onValue={(y) => setParams({ year: y })} options={yearOptions} className="w-32" />}
     >
       {(r) => (
         <>

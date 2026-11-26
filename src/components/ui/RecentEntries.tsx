@@ -18,8 +18,8 @@ export const ENTRY_LABELS: Record<EntryType, string> = {
 const describe = (e: Entry) =>
   [ENTRY_LABELS[e.type], e.customerName || e.category, e.permitNo && `إذن ${e.permitNo}`, e.note].filter(Boolean).join(' · ');
 
-export function RecentEntries({ title, entries, onChanged }: { title: string; entries: Entry[]; onChanged: () => void }) {
-  const cancel = (e: Entry) => <CancelEntryButton id={e.id} isInvoice={e.type === 'invoice'} onDone={onChanged} />;
+export function RecentEntries({ title, entries }: { title: string; entries: Entry[] }) {
+  const cancel = (e: Entry) => <CancelEntryButton id={e.id} isInvoice={e.type === 'invoice'} />;
   return (
     <section>
       <h2 className="mb-3 text-lg">{title}</h2>

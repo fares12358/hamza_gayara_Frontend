@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 const KEY = 'gayara-theme';
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
   }, [theme]);
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     const next = theme === 'dark' ? 'light' : 'dark';
     try {
       localStorage.setItem(KEY, next);
@@ -34,7 +34,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       /* storage blocked: the choice lasts for this visit */
     }
     setTheme(next);
-  };
+  }, [theme]);
+  const value = useMemo(() => ({ theme, toggle }), [theme, toggle]);
 
-  return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>;
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

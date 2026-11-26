@@ -14,18 +14,23 @@ export class ApiRequestError extends Error {
 export const UNAUTHORIZED_EVENT = 'gayara:unauthorized';
 
 export const DATA_CHANGED_EVENT = 'gayara:data-changed';
+/** saved: the server saved it. unknown: no clear answer, it may have been saved. */
+export type DataChange = 'saved' | 'unknown';
+
+const changesData = (method = 'get', url = '') => method !== 'get' && url !== '/auth/login' && url !== '/auth/logout';
+const announce = (detail: DataChange) => window.dispatchEvent(new CustomEvent<DataChange>(DATA_CHANGED_EVENT, { detail }));
 
 export const http = axios.create({ baseURL: API_BASE_URL, timeout: 45_000, withCredentials: true });
 
 http.interceptors.response.use(
   (response) => {
-    const { method = 'get', url = '' } = response.config;
-    if (method !== 'get' && !url.startsWith('/auth/')) window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
+    if (changesData(response.config.method, response.config.url)) announce('saved');
     return response;
   },
   (error: AxiosError<{ error?: { code: string; message: string } }>) => {
     const status = error.response?.status ?? 0;
     const body = error.response?.data?.error;
+    if ((status === 0 || status >= 500) && changesData(error.config?.method, error.config?.url)) announce('unknown');
     if (status === 401 && !error.config?.url?.startsWith('/auth/')) {
       window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
     }

@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { memo, useDeferredValue, useMemo, useState } from 'react';
 import { customersApi } from '../../api/customers';
 import { Icon } from '../../components/layout/Icon';
 import { BalanceSlab } from '../../components/ui/BalanceSlab';
 import { Button } from '../../components/ui/Button';
-import { Input, Select } from '../../components/ui/Field';
+import { Input } from '../../components/ui/Field';
 import { PageHeader } from '../../components/ui/Layouts';
 import { Money } from '../../components/ui/Money';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { Select } from '../../components/ui/Select';
 import { AsyncView, EmptyState } from '../../components/ui/States';
 import { useAuth } from '../../context/AuthContext';
 import { useApi } from '../../hooks/useApi';
@@ -35,12 +36,58 @@ const SORTS: Record<Sort, (a: CustomerSummary, b: CustomerSummary) => number> = 
   recent: (a, b) => b.lastActivity.localeCompare(a.lastActivity),
 };
 
+const SORT_OPTIONS: { value: Sort; label: string }[] = [
+  { value: 'balance', label: 'أعلى رصيد' },
+  { value: 'late', label: 'أكبر متأخرات' },
+  { value: 'recent', label: 'أحدث حركة' },
+  { value: 'name', label: 'الاسم' },
+];
+
+/** Redrawn only when the shown customers change, not on every letter typed. */
+const Results = memo(CustomerList);
+
+/** Search, order and filter. Their state is here, so typing does not redraw the totals above. */
+function CustomerBrowser({ customers }: { customers: CustomerSummary[] }) {
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [sort, setSort] = useState('balance');
+  // The box shows the letter at once; the long list follows when the browser is free.
+  const query = useDeferredValue(search);
+
+  const shown = useMemo(
+    () => customers.filter((c) => matchesName(query, c.name, ...c.aliases) && FILTERS[filter](c)).sort(SORTS[sort as Sort]),
+    [customers, query, filter, sort],
+  );
+  const maxDebt = useMemo(() => Math.max(0, ...customers.map((c) => c.balance)), [customers]);
+  const filterOptions = useMemo(() => {
+    const count = (f: Filter) => customers.filter(FILTERS[f]).length;
+    return [
+      { value: 'all' as const, label: `الكل (${count('all')})` },
+      { value: 'debt' as const, label: `المديونيات (${count('debt')})` },
+      { value: 'late' as const, label: `المتأخرين (${count('late')})` },
+    ];
+  }, [customers]);
+
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-lg">كل العملاء</h2>
+      <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_12rem] lg:grid-cols-[minmax(0,1fr)_12rem_auto]">
+        <Input label="ابحث باسم العميل" type="search" icon="search" placeholder="مثلاً: احمد" value={search} onValue={setSearch} />
+        <Select label="الترتيب" value={sort} onValue={setSort} options={SORT_OPTIONS} />
+        <SegmentedControl<Filter> label="تصفية العملاء" value={filter} onChange={setFilter} options={filterOptions} />
+      </div>
+      {shown.length ? (
+        <Results customers={shown} maxDebt={maxDebt} />
+      ) : (
+        <EmptyState>{customers.length ? 'مفيش عملاء مطابقين. امسح البحث أو اختار "الكل".' : 'لسه مفيش عملاء'}</EmptyState>
+      )}
+    </section>
+  );
+}
+
 export function CustomersPage() {
   const { isOwner } = useAuth();
   const state = useApi(customersApi.list, 'customers');
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<Filter>('all');
-  const [sort, setSort] = useState<Sort>('balance');
   const [adding, setAdding] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -58,72 +105,25 @@ export function CustomersPage() {
           )
         }
       />
-      {adding && (
-        <NewCustomerForm
-          onSaved={() => {
-            setAdding(false);
-            state.reload();
-          }}
-        />
-      )}
+      {adding && <NewCustomerForm onSaved={() => setAdding(false)} />}
       <AsyncView state={state}>
-        {({ customers, totals, overdueDays }) => {
-          const shown = customers
-            .filter((c) => matchesName(search, c.name, ...c.aliases) && FILTERS[filter](c))
-            .sort(SORTS[sort]);
-          const maxDebt = Math.max(0, ...customers.map((c) => c.balance));
-          const count = (f: Filter) => customers.filter(FILTERS[f]).length;
-
-          return (
-            <>
-              <div className={`grid gap-4 ${totals.debt > 0 ? 'xl:grid-cols-2' : ''}`}>
-                <BalanceSlab
-                  className="justify-center!"
-                  label="إجمالي مديونيات العملاء"
-                  amount={totals.debt}
-                  stats={[
-                    { label: 'عملاء عليهم مديونية', value: <span className="num">{totals.debtors}</span> },
-                    { label: `متأخر أكتر من ${overdueDays} أيام`, value: <Money value={totals.overdue} /> },
-                  ]}
-                />
-                <DebtLeaders customers={customers} totalDebt={totals.debt} />
-              </div>
-
-              <section className="flex flex-col gap-3">
-                <h2 className="text-lg">كل العملاء</h2>
-                <div className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_12rem] lg:grid-cols-[minmax(0,1fr)_12rem_auto]">
-                  <Input label="ابحث باسم العميل" type="search" icon="search" placeholder="مثلاً: احمد" value={search} onValue={setSearch} />
-                  <Select
-                    label="الترتيب"
-                    value={sort}
-                    onValue={(v) => setSort(v as Sort)}
-                    options={[
-                      { value: 'balance', label: 'أعلى رصيد' },
-                      { value: 'late', label: 'أكبر متأخرات' },
-                      { value: 'recent', label: 'أحدث حركة' },
-                      { value: 'name', label: 'الاسم' },
-                    ]}
-                  />
-                  <SegmentedControl<Filter>
-                    label="تصفية العملاء"
-                    value={filter}
-                    onChange={setFilter}
-                    options={[
-                      { value: 'all', label: `الكل (${count('all')})` },
-                      { value: 'debt', label: `المديونيات (${count('debt')})` },
-                      { value: 'late', label: `المتأخرين (${count('late')})` },
-                    ]}
-                  />
-                </div>
-                {shown.length ? (
-                  <CustomerList customers={shown} maxDebt={maxDebt} />
-                ) : (
-                  <EmptyState>{customers.length ? 'مفيش عملاء مطابقين. امسح البحث أو اختار "الكل".' : 'لسه مفيش عملاء'}</EmptyState>
-                )}
-              </section>
-            </>
-          );
-        }}
+        {({ customers, totals, overdueDays }) => (
+          <>
+            <div className={`grid gap-4 ${totals.debt > 0 ? 'xl:grid-cols-2' : ''}`}>
+              <BalanceSlab
+                className="justify-center!"
+                label="إجمالي مديونيات العملاء"
+                amount={totals.debt}
+                stats={[
+                  { label: 'عملاء عليهم مديونية', value: <span className="num">{totals.debtors}</span> },
+                  { label: `متأخر أكتر من ${overdueDays} أيام`, value: <Money value={totals.overdue} /> },
+                ]}
+              />
+              <DebtLeaders customers={customers} totalDebt={totals.debt} />
+            </div>
+            <CustomerBrowser customers={customers} />
+          </>
+        )}
       </AsyncView>
       {isOwner && (
         <>

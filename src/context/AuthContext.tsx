@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { authApi } from '../api/auth';
 import { ApiRequestError, UNAUTHORIZED_EVENT } from '../api/client';
 import type { User } from '../types';
@@ -45,17 +45,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, onExpired);
   }, [check]);
 
-  const value: AuthValue = {
-    user,
-    status,
-    isOwner: user?.role === 'owner',
-    retry: check,
-    login: async (username, password) => setUser(await authApi.login(username, password)),
-    logout: async () => {
-      await authApi.logout();
-      setUser(null);
-    },
-  };
+  // The same object until the user or status changes, so readers do not re-render for nothing.
+  const value = useMemo<AuthValue>(
+    () => ({
+      user,
+      status,
+      isOwner: user?.role === 'owner',
+      retry: check,
+      login: async (username, password) => setUser(await authApi.login(username, password)),
+      logout: async () => {
+        await authApi.logout();
+        setUser(null);
+      },
+    }),
+    [user, status, check],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

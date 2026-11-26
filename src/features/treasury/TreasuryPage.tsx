@@ -14,6 +14,14 @@ import { CashForm } from './CashForm';
 
 type Range = 'week' | 'month' | 'days30' | 'year' | 'all';
 
+const RANGES: { value: Range; label: string }[] = [
+  { value: 'week', label: '7 أيام' },
+  { value: 'month', label: 'الشهر ده' },
+  { value: 'days30', label: '30 يوم' },
+  { value: 'year', label: 'السنة دي' },
+  { value: 'all', label: 'الكل' },
+];
+
 const fromDate: Record<Range, () => string> = {
   week: () => daysAgoIso(7),
   month: () => `${todayIso().slice(0, 8)}01`,
@@ -24,14 +32,15 @@ const fromDate: Record<Range, () => string> = {
 
 export function TreasuryPage() {
   const [range, setRange] = useState<Range>('month');
-  const state = useApi(() => treasuryApi.ledger(fromDate[range]()), range);
+  const from = fromDate[range]();
+  const state = useApi(() => treasuryApi.ledger(from), `treasury:${from}`);
 
   return (
     <>
       <PageHeader title="الخزنة" description="سجّل حركات اليوم، والرصيد بيتحدث على طول." />
       <AsyncView state={state}>
         {(ledger) => {
-          const cancel = (r: CashLedgerRow) => (r.source === 'app' ? <CancelEntryButton id={r.id} onDone={state.reload} /> : null);
+          const cancel = (r: CashLedgerRow) => (r.source === 'app' ? <CancelEntryButton id={r.id} /> : null);
           return (
             <>
               <BalanceSlab
@@ -43,20 +52,14 @@ export function TreasuryPage() {
                   { label: 'مصروفات الفترة المختارة', value: <Money value={ledger.totals.expense} /> },
                 ]}
               />
-              <CashForm cashBalance={ledger.balance} onSaved={state.reload} />
+              <CashForm cashBalance={ledger.balance} />
               <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-lg">حركة الخزنة <span className="text-sm font-normal text-muted">(الأحدث فوق)</span></h2>
                 <SegmentedControl<Range>
                   label="فترة حركة الخزنة"
                   value={range}
                   onChange={setRange}
-                  options={[
-                    { value: 'week', label: '7 أيام' },
-                    { value: 'month', label: 'الشهر ده' },
-                    { value: 'days30', label: '30 يوم' },
-                    { value: 'year', label: 'السنة دي' },
-                    { value: 'all', label: 'الكل' },
-                  ]}
+                  options={RANGES}
                 />
               </div>
               <DataTable

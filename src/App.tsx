@@ -3,6 +3,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { ErrorState, Loading } from './components/ui/States';
 import { useAuth } from './context/AuthContext';
+import { DataProvider } from './context/DataContext';
 import { LoginPage } from './features/auth/LoginPage';
 import { CustomersPage } from './features/customers/CustomersPage';
 
@@ -34,6 +35,8 @@ export function App() {
   if (!user) return <LoginPage />;
 
   return (
+    // A new key per user: cached data never passes from one user to another.
+    <DataProvider key={user.id}>
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<CustomersPage />} />
@@ -50,5 +53,6 @@ export function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
+    </DataProvider>
   );
 }

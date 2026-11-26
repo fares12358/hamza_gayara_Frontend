@@ -13,30 +13,29 @@ import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { AsyncView } from '../../components/ui/States';
 import { useToast } from '../../context/ToastContext';
 import { useApi } from '../../hooks/useApi';
+import { useFields } from '../../hooks/useFields';
 import { useSafeSubmit } from '../../hooks/useSafeSubmit';
 import { todayIso } from '../../lib/dates';
 import { parseMoney } from '../../lib/money';
+import type { CustomerSummary } from '../../types';
 
 type Mode = 'credit' | 'cash';
 const EMPTY = { amount: '', returned: '', paid: '', permitNo: '', note: '' };
+const NO_CUSTOMERS: CustomerSummary[] = [];
+const MODES: { value: Mode; label: string }[] = [{ value: 'credit', label: 'آجل لعميل' }, { value: 'cash', label: 'بيع نقدي' }];
 
-export function InvoicePage() {
+function InvoiceForm() {
   const toast = useToast();
   const [mode, setMode] = useState<Mode>('credit');
   const [customerId, setCustomerId] = useState('');
   const [date, setDate] = useState(todayIso);
-  const [form, setForm] = useState(EMPTY);
+  const fields = useFields(EMPTY);
+  const form = fields.values;
   const { saving, submit, confirm } = useSafeSubmit();
 
   const customers = useApi(customersApi.list, 'customers');
-  const recent = useApi(() => entriesApi.recent(['invoice', 'cash_sale']), 'recent-invoices');
-  const reload = () => {
-    customers.reload();
-    recent.reload();
-  };
-  const set = (key: keyof typeof EMPTY) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
 
-  const options = customers.data?.customers ?? [];
+  const options = customers.data?.customers ?? NO_CUSTOMERS;
   const customer = options.find((c) => c.id === customerId);
   const amount = parseMoney(form.amount);
   const returned = parseMoney(form.returned);
@@ -62,9 +61,8 @@ export function InvoicePage() {
               permitNo: form.permitNo, note: form.note, ...safe,
             }),
       () => {
-        setForm(EMPTY);
+        fields.reset();
         toast('تم حفظ الفاتورة');
-        reload();
       },
     );
   }
@@ -95,34 +93,44 @@ export function InvoicePage() {
 
   return (
     <>
-      <PageHeader title="فاتورة جديدة" description="الفاتورة الآجلة بتزود مديونية العميل، والبيع النقدي بيدخل الخزنة على طول." />
-      <SegmentedControl<Mode>
-        label="نوع الفاتورة"
-        value={mode}
-        onChange={setMode}
-        options={[{ value: 'credit', label: 'آجل لعميل' }, { value: 'cash', label: 'بيع نقدي' }]}
-      />
+      <SegmentedControl<Mode> label="نوع الفاتورة" value={mode} onChange={setMode} options={MODES} />
       <AsyncView state={customers}>
         {() => (
           <EntryForm onSubmit={onSubmit} saving={saving} preview={preview} submitLabel={mode === 'credit' ? 'حفظ الفاتورة' : 'حفظ البيع النقدي'}>
             {mode === 'credit' && <CustomerPicker customers={options} value={customerId} onChange={setCustomerId} />}
             <FormGrid>
-              <MoneyInput label="إجمالي الفاتورة" value={form.amount} onValue={set('amount')} />
-              {mode === 'credit' && <MoneyInput label="مرتجع / فرق وزن" value={form.returned} onValue={set('returned')} />}
-              {mode === 'credit' && <MoneyInput label="دفعة مع الفاتورة" value={form.paid} onValue={set('paid')} />}
+              <MoneyInput label="إجمالي الفاتورة" value={form.amount} onValue={fields.set.amount} />
+              {mode === 'credit' && <MoneyInput label="مرتجع / فرق وزن" value={form.returned} onValue={fields.set.returned} />}
+              {mode === 'credit' && <MoneyInput label="دفعة مع الفاتورة" value={form.paid} onValue={fields.set.paid} />}
             </FormGrid>
             <FormGrid>
               <DateField label="التاريخ" value={date} onValue={setDate} />
-              {mode === 'credit' && <Input label="رقم الإذن" inputMode="numeric" value={form.permitNo} onValue={set('permitNo')} autoComplete="off" />}
-              <Input label="ملاحظة (اختياري)" value={form.note} onValue={set('note')} autoComplete="off" />
+              {mode === 'credit' && <Input label="رقم الإذن" inputMode="numeric" value={form.permitNo} onValue={fields.set.permitNo} autoComplete="off" />}
+              <Input label="ملاحظة (اختياري)" value={form.note} onValue={fields.set.note} autoComplete="off" />
             </FormGrid>
           </EntryForm>
         )}
       </AsyncView>
-      <AsyncView state={recent}>
-        {(entries) => <RecentEntries title="آخر الفواتير اللي اتسجلت من التطبيق" entries={entries} onChanged={reload} />}
-      </AsyncView>
       <ConfirmDialog {...confirm} />
+    </>
+  );
+}
+
+function RecentInvoices() {
+  const recent = useApi(() => entriesApi.recent(['invoice', 'cash_sale']), 'recent-invoices');
+  return (
+    <AsyncView state={recent}>
+      {(entries) => <RecentEntries title="آخر الفواتير اللي اتسجلت من التطبيق" entries={entries} />}
+    </AsyncView>
+  );
+}
+
+export function InvoicePage() {
+  return (
+    <>
+      <PageHeader title="فاتورة جديدة" description="الفاتورة الآجلة بتزود مديونية العميل، والبيع النقدي بيدخل الخزنة على طول." />
+      <InvoiceForm />
+      <RecentInvoices />
     </>
   );
 }

@@ -4,49 +4,85 @@ import { usersApi } from '../../api/users';
 import { Button } from '../../components/ui/Button';
 import { DataTable, LedgerLine } from '../../components/ui/DataTable';
 import { Dialog } from '../../components/ui/Dialog';
-import { Input, Select } from '../../components/ui/Field';
+import { Input } from '../../components/ui/Field';
 import { Card, FormGrid, PageHeader } from '../../components/ui/Layouts';
+import { Select } from '../../components/ui/Select';
 import { AsyncView } from '../../components/ui/States';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useApi } from '../../hooks/useApi';
+import { useFields } from '../../hooks/useFields';
 import type { Role, User } from '../../types';
 
 const ROLE_LABEL: Record<Role, string> = { owner: 'مالك (كل الصلاحيات)', staff: 'موظف (عملاء وشيكات)' };
-const EMPTY = { name: '', username: '', password: '', role: 'staff' as Role };
+const ROLE_OPTIONS = Object.entries(ROLE_LABEL).map(([value, label]) => ({ value, label }));
+const EMPTY = { name: '', username: '', password: '', role: 'staff' };
 
-export function UsersPage() {
+/** A save that tells the user the result. The list reloads by itself after it. */
+function useRun() {
   const toast = useToast();
-  const { user: me } = useAuth();
-  const state = useApi(usersApi.list, 'users');
-  const [form, setForm] = useState(EMPTY);
-  const [resetting, setResetting] = useState<User | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-
-  async function run(action: () => Promise<unknown>, success: string) {
+  return async (action: () => Promise<unknown>, success: string) => {
     try {
       await action();
       toast(success);
-      state.reload();
       return true;
     } catch (e) {
       toast((e as Error).message, 'error');
       return false;
     }
-  }
+  };
+}
+
+function NewUserForm() {
+  const run = useRun();
+  const form = useFields(EMPTY);
 
   async function add(event: FormEvent) {
     event.preventDefault();
-    if (await run(() => usersApi.create(form), 'تم إضافة المستخدم')) setForm(EMPTY);
+    const body = { ...form.values, role: form.values.role as Role };
+    if (await run(() => usersApi.create(body), 'تم إضافة المستخدم')) form.reset();
   }
+
+  return (
+    <Card title="مستخدم جديد">
+      <form onSubmit={add} className="flex flex-col gap-4">
+        <FormGrid>
+          <Input label="الاسم" value={form.values.name} onValue={form.set.name} />
+          <Input label="اسم المستخدم (إنجليزي)" dir="ltr" autoCapitalize="none" autoComplete="off" value={form.values.username} onValue={form.set.username} />
+          <Input label="كلمة السر (8 على الأقل)" type="password" dir="ltr" autoComplete="new-password" value={form.values.password} onValue={form.set.password} />
+          <Select label="الصلاحية" value={form.values.role} onValue={form.set.role} options={ROLE_OPTIONS} />
+        </FormGrid>
+        <Button type="submit" variant="primary" className="sm:self-start">إضافة المستخدم</Button>
+      </form>
+    </Card>
+  );
+}
+
+/** Mounted only while open, so the box starts empty each time. */
+function ResetPasswordDialog({ user, onClose }: { user: User; onClose: () => void }) {
+  const run = useRun();
+  const [password, setPassword] = useState('');
 
   async function reset(event: FormEvent) {
     event.preventDefault();
-    if (resetting && (await run(() => usersApi.update(resetting.id, { password: newPassword }), 'تم تغيير كلمة السر'))) {
-      setResetting(null);
-      setNewPassword('');
-    }
+    if (await run(() => usersApi.update(user.id, { password }), 'تم تغيير كلمة السر')) onClose();
   }
+
+  return (
+    <Dialog open onClose={onClose} title={`كلمة سر جديدة: ${user.name}`}>
+      <form onSubmit={reset} className="flex flex-col gap-4">
+        <Input label="كلمة السر الجديدة" type="password" dir="ltr" autoComplete="new-password" minLength={8} required value={password} onValue={setPassword} />
+        <Button type="submit" variant="primary">حفظ كلمة السر</Button>
+      </form>
+    </Dialog>
+  );
+}
+
+export function UsersPage() {
+  const { user: me } = useAuth();
+  const state = useApi(usersApi.list, 'users');
+  const [resetting, setResetting] = useState<User | null>(null);
+  const run = useRun();
 
   const actions = (u: User) => (
     <span className="inline-flex flex-wrap justify-end gap-1">
@@ -65,17 +101,7 @@ export function UsersPage() {
         title="المستخدمين"
         actions={<Link to="/audit" className="inline-flex min-h-11 items-center rounded-xl border border-line bg-surface px-4 font-semibold hover:bg-raised">سجل العمليات</Link>}
       />
-      <Card title="مستخدم جديد">
-        <form onSubmit={add} className="flex flex-col gap-4">
-          <FormGrid>
-            <Input label="الاسم" value={form.name} onValue={(name) => setForm({ ...form, name })} />
-            <Input label="اسم المستخدم (إنجليزي)" dir="ltr" autoCapitalize="none" autoComplete="off" value={form.username} onValue={(username) => setForm({ ...form, username })} />
-            <Input label="كلمة السر (8 على الأقل)" type="password" dir="ltr" autoComplete="new-password" value={form.password} onValue={(password) => setForm({ ...form, password })} />
-            <Select label="الصلاحية" value={form.role} onValue={(role) => setForm({ ...form, role: role as Role })} options={Object.entries(ROLE_LABEL).map(([value, label]) => ({ value, label }))} />
-          </FormGrid>
-          <Button type="submit" variant="primary" className="sm:self-start">إضافة المستخدم</Button>
-        </form>
-      </Card>
+      <NewUserForm />
       <AsyncView state={state}>
         {(users) => (
           <DataTable
@@ -96,12 +122,7 @@ export function UsersPage() {
           />
         )}
       </AsyncView>
-      <Dialog open={resetting !== null} onClose={() => setResetting(null)} title={`كلمة سر جديدة: ${resetting?.name ?? ''}`}>
-        <form onSubmit={reset} className="flex flex-col gap-4">
-          <Input label="كلمة السر الجديدة" type="password" dir="ltr" autoComplete="new-password" minLength={8} required value={newPassword} onValue={setNewPassword} />
-          <Button type="submit" variant="primary">حفظ كلمة السر</Button>
-        </form>
-      </Dialog>
+      {resetting && <ResetPasswordDialog user={resetting} onClose={() => setResetting(null)} />}
     </>
   );
 }

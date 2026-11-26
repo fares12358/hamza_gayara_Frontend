@@ -1,5 +1,18 @@
 /** Small layout blocks shared by all pages. */
 import type { ReactNode } from 'react';
+import { useDataStore } from '../../context/DataContext';
+import { Icon } from '../layout/Icon';
+import { Button } from './Button';
+
+/** Screens reuse loaded figures for a short time. This asks the server again now. */
+function RefreshButton() {
+  const store = useDataStore();
+  return (
+    <Button variant="ghost" size="icon" aria-label="تحديث الأرقام" title="تحديث الأرقام" onClick={() => store.invalidate()}>
+      <Icon name="refresh" />
+    </Button>
+  );
+}
 
 export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
   return (
@@ -8,7 +21,10 @@ export function PageHeader({ title, description, actions }: { title: string; des
         <h1 className="text-2xl sm:text-3xl">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      <div className="ms-auto flex flex-wrap justify-end gap-2">
+        {actions}
+        <RefreshButton />
+      </div>
     </header>
   );
 }

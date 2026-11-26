@@ -22,6 +22,7 @@ const paths = {
   reports: 'M5 3h14v18H5zM9 17v-4M12 17V8M15 17v-6',
   download: 'M12 4v11M7 11l5 5 5-5M5 20h14',
   share: 'M12 15V3M8 7l4-4 4 4M6 11H5v10h14V11h-1',
+  refresh: 'M20 12a8 8 0 1 1-2.5-5.8L20 8.5M20 4v4.5h-4.5',
   arrowLeft: 'M20 12H4M10 6l-6 6 6 6',
 };
 

@@ -27,7 +27,7 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
 
 export function IncomePage() {
   const [month, setMonth] = useState('');
-  const state = useApi(() => reportsApi.income(month), month || 'current');
+  const state = useApi(() => reportsApi.income(month), `income:${month || 'current'}`);
   // Kept while another month loads, so the month control does not disappear.
   const [months, setMonths] = useState<string[]>([]);
   if (state.data && state.data.months.join() !== months.join()) setMonths(state.data.months);

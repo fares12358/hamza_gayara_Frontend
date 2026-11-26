@@ -22,6 +22,13 @@ import { statementText } from './statementText';
 import { AdjustBalanceDialog } from './AdjustBalanceDialog';
 import { EditCustomerDialog } from './EditCustomerDialog';
 
+const RANGES = [
+  { value: '30', label: '30 يوم' },
+  { value: '90', label: '3 شهور' },
+  { value: '180', label: '6 شهور' },
+  { value: '0', label: 'الكل' },
+];
+
 const amount = (value: number) => (value ? <Money value={value} /> : '');
 
 const permit = (r: StatementRow) => {
@@ -47,7 +54,7 @@ export function StatementPage() {
   const [copyFallback, setCopyFallback] = useState('');
   const [dialog, setDialog] = useState<'edit' | 'adjust' | null>(null);
   const navigate = useNavigate();
-  const state = useApi(() => customersApi.statement(id, Number(range)), `${id}:${range}`);
+  const state = useApi(() => customersApi.statement(id, Number(range)), `statement:${id}:${range}`);
 
   async function copy(text: string) {
     try {
@@ -62,7 +69,6 @@ export function StatementPage() {
     try {
       await customersApi.update(id, { archived: false });
       toast('رجع العميل من الأرشيف');
-      state.reload();
     } catch (e) {
       toast((e as Error).message, 'error');
     }
@@ -74,7 +80,7 @@ export function StatementPage() {
     return (
       <span className="inline-flex gap-1">
         {r.imageId && <ChequePhotoButton imageId={r.imageId} />}
-        {canCancel && <CancelEntryButton id={r.id} isInvoice={r.type === 'invoice'} onDone={state.reload} />}
+        {canCancel && <CancelEntryButton id={r.id} isInvoice={r.type === 'invoice'} />}
       </span>
     );
   };
@@ -120,10 +126,7 @@ export function StatementPage() {
                 <EditCustomerDialog
                   customer={customer}
                   onClose={() => setDialog(null)}
-                  onSaved={() => {
-                    setDialog(null);
-                    state.reload();
-                  }}
+                  onSaved={() => setDialog(null)}
                   onArchived={() => navigate('/')}
                 />
               )}
@@ -131,10 +134,7 @@ export function StatementPage() {
                 <AdjustBalanceDialog
                   customer={customer}
                   onClose={() => setDialog(null)}
-                  onSaved={() => {
-                    setDialog(null);
-                    state.reload();
-                  }}
+                  onSaved={() => setDialog(null)}
                 />
               )}
               <BalanceSlab
@@ -157,12 +157,7 @@ export function StatementPage() {
                   label="الفترة"
                   value={range}
                   onChange={setRange}
-                  options={[
-                    { value: '30', label: '30 يوم' },
-                    { value: '90', label: '3 شهور' },
-                    { value: '180', label: '6 شهور' },
-                    { value: '0', label: 'الكل' },
-                  ]}
+                  options={RANGES}
                 />
               </div>
               <DataTable

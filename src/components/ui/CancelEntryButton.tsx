@@ -5,7 +5,7 @@ import { Button } from './Button';
 import { ConfirmDialog } from './Dialog';
 
 /** Cancels a record after confirmation. The record stays in the database. */
-export function CancelEntryButton({ id, isInvoice, onDone }: { id: string; isInvoice?: boolean; onDone: () => void }) {
+export function CancelEntryButton({ id, isInvoice }: { id: string; isInvoice?: boolean }) {
   const [open, setOpen] = useState(false);
   const toast = useToast();
 
@@ -13,8 +13,7 @@ export function CancelEntryButton({ id, isInvoice, onDone }: { id: string; isInv
     setOpen(false);
     try {
       await entriesApi.cancel(id);
-      toast('تم إلغاء الحركة');
-      onDone();
+      toast('تم إلغاء الحركة'); // the lists reload by themselves after a save
     } catch (error) {
       toast((error as Error).message, 'error');
     }

@@ -1,20 +1,30 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { customersApi } from '../../api/customers';
 import { entriesApi, type CashInput } from '../../api/entries';
 import { BalancePreview } from '../../components/ui/BalancePreview';
 import { CustomerPicker } from '../../components/ui/CustomerPicker';
 import { ConfirmDialog } from '../../components/ui/Dialog';
 import { EntryForm } from '../../components/ui/EntryForm';
-import { DateField, Input, MoneyInput, Select } from '../../components/ui/Field';
+import { DateField, Input, MoneyInput } from '../../components/ui/Field';
 import { FormGrid } from '../../components/ui/Layouts';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { Select } from '../../components/ui/Select';
 import { useToast } from '../../context/ToastContext';
 import { useApi } from '../../hooks/useApi';
 import { useSafeSubmit } from '../../hooks/useSafeSubmit';
 import { todayIso } from '../../lib/dates';
 import { parseMoney } from '../../lib/money';
+import type { CustomerSummary } from '../../types';
 
 type Mode = CashInput['type'];
+
+const NO_CUSTOMERS: CustomerSummary[] = [];
+const MODES: { value: Mode; label: string }[] = [
+  { value: 'payment', label: 'تحصيل من عميل' },
+  { value: 'cash_sale', label: 'مبيعات نقدية' },
+  { value: 'expense', label: 'مصروف' },
+  { value: 'transfer', label: 'تحويل لفرع العبور' },
+];
 
 const SAVE_LABEL: Record<Mode, string> = {
   payment: 'حفظ التحصيل',
@@ -23,7 +33,7 @@ const SAVE_LABEL: Record<Mode, string> = {
   transfer: 'حفظ التحويل',
 };
 
-export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSaved: () => void }) {
+export function CashForm({ cashBalance }: { cashBalance: number }) {
   const toast = useToast();
   const [mode, setMode] = useState<Mode>('payment');
   const [customerId, setCustomerId] = useState('');
@@ -35,7 +45,8 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
 
   const customers = useApi(customersApi.list, 'customers');
   const categories = useApi(entriesApi.categories, 'categories');
-  const options = customers.data?.customers ?? [];
+  const options = customers.data?.customers ?? NO_CUSTOMERS;
+  const categoryOptions = useMemo(() => (categories.data ?? []).map((c) => ({ value: c, label: c })), [categories.data]);
   const customer = options.find((c) => c.id === customerId);
   const amount = parseMoney(amountText);
 
@@ -58,8 +69,6 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
         setAmountText('');
         setNote('');
         toast('تم الحفظ');
-        customers.reload();
-        onSaved();
       },
     );
   }
@@ -73,12 +82,7 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
         label="نوع الحركة"
         value={mode}
         onChange={setMode}
-        options={[
-          { value: 'payment', label: 'تحصيل من عميل' },
-          { value: 'cash_sale', label: 'مبيعات نقدية' },
-          { value: 'expense', label: 'مصروف' },
-          { value: 'transfer', label: 'تحويل لفرع العبور' },
-        ]}
+        options={MODES}
       />
       <EntryForm
         onSubmit={onSubmit}
@@ -96,7 +100,7 @@ export function CashForm({ cashBalance, onSaved }: { cashBalance: number; onSave
         <FormGrid>
           <MoneyInput label="المبلغ" value={amountText} onValue={setAmountText} />
           {mode === 'expense' && (
-            <Select label="نوع المصروف" value={category} onValue={setCategory} options={(categories.data ?? []).map((c) => ({ value: c, label: c }))} />
+            <Select label="نوع المصروف" value={category} onValue={setCategory} options={categoryOptions} />
           )}
           <DateField label="التاريخ" value={date} onValue={setDate} />
         </FormGrid>

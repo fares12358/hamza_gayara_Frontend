@@ -1,28 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useDataStore } from '../context/DataContext';
 
-/** Loads data when "key" changes. Late answers of older requests are ignored. */
-export function useApi<T>(load: () => Promise<T>, key: string) {
-  const [state, setState] = useState<{ data?: T; error?: string; loading: boolean }>({ loading: true });
-  const [version, setVersion] = useState(0);
+interface Options {
+  /** Check again whether the data is still fresh when this changes. */
+  refreshOn?: unknown;
+  /** Keep the old data on screen while a new key loads. Only for "show more" lists. */
+  keepPrevious?: boolean;
+}
+
+/**
+ * Data from the server, shared and cached by "key" (see lib/dataStore).
+ * The key must name the request and every value it uses, e.g. `statement:${id}:${range}`.
+ */
+export function useApi<T>(load: () => Promise<T>, key: string, { refreshOn, keepPrevious }: Options = {}) {
+  const store = useDataStore();
   const loader = useRef(load);
   loader.current = load;
-  const lastKey = useRef(key);
 
-  useEffect(() => {
-    let current = true;
-    const keyChanged = lastKey.current !== key;
-    lastKey.current = key;
-    // Never show figures that belong to another customer or month.
-    setState((s) => ({ data: keyChanged ? undefined : s.data, loading: true }));
-    loader.current().then(
-      (data) => current && setState({ data, loading: false }),
-      (error: Error) => current && setState({ error: error.message, loading: false }),
-    );
-    return () => {
-      current = false;
-    };
-  }, [key, version]);
+  const subscribe = useCallback((listener: () => void) => store.subscribe(key, listener), [store, key]);
+  const snapshot = useSyncExternalStore(subscribe, () => store.get(key));
 
-  const reload = useCallback(() => setVersion((v) => v + 1), []);
-  return { ...state, reload };
+  useEffect(() => store.ensure(key, loader.current), [store, key, refreshOn]);
+
+  const previous = useRef<T>(undefined);
+  const own = snapshot.data as T | undefined;
+  if (own !== undefined) previous.current = own;
+  // Without keepPrevious, figures of another customer or month are never shown.
+  const data = own ?? (keepPrevious && !snapshot.error ? previous.current : undefined);
+
+  const reload = useCallback(() => store.reload(key), [store, key]);
+  return { data, error: snapshot.error, loading: snapshot.loading, reload };
 }

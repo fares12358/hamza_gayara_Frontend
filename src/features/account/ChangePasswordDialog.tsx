@@ -4,15 +4,17 @@ import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { Input } from '../../components/ui/Field';
 import { useToast } from '../../context/ToastContext';
+import { useFields } from '../../hooks/useFields';
 
 const EMPTY = { current: '', next: '', again: '' };
 
 export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const toast = useToast();
-  const [form, setForm] = useState(EMPTY);
+  const fields = useFields(EMPTY);
+  const form = fields.values;
   const [saving, setSaving] = useState(false);
   const close = () => {
-    setForm(EMPTY);
+    fields.reset();
     onClose();
   };
 
@@ -33,7 +35,7 @@ export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose
   }
 
   const field = (key: keyof typeof EMPTY, label: string, autoComplete: string) => (
-    <Input label={label} type="password" dir="ltr" required autoComplete={autoComplete} value={form[key]} onValue={(v) => setForm((f) => ({ ...f, [key]: v }))} />
+    <Input label={label} type="password" dir="ltr" required autoComplete={autoComplete} value={form[key]} onValue={fields.set[key]} />
   );
 
   return (

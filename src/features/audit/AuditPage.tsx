@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { auditApi } from '../../api/audit';
 import { Button } from '../../components/ui/Button';
 import { DataTable, LedgerLine } from '../../components/ui/DataTable';
@@ -36,9 +36,7 @@ const amount = (r: AuditRecord) => (typeof r.data.amount === 'number' ? <Money v
 /** Who did what, and when. Read only. */
 export function AuditPage() {
   const [limit, setLimit] = useState(100);
-  const state = useApi(() => auditApi.list(limit), 'audit');
-  const { reload } = state;
-  useEffect(() => reload(), [limit, reload]);
+  const state = useApi(() => auditApi.list(limit), `audit:${limit}`, { keepPrevious: true });
 
   return (
     <>

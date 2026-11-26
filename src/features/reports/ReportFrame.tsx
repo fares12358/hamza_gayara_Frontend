@@ -8,7 +8,7 @@ import { useApi } from '../../hooks/useApi';
 import type { ReportKey, ReportMap, ReportParams, ReportResponse } from '../../types/reports';
 
 export function useReport<K extends ReportKey>(key: K, params: ReportParams) {
-  return useApi(() => reportFilesApi.view(key, params), `${key}:${JSON.stringify(params)}`);
+  return useApi(() => reportFilesApi.view(key, params), `report:${key}:${JSON.stringify(params)}`);
 }
 
 /** The same frame for every report: filters, Excel button, notes, then the content. */

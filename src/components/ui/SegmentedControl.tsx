@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { memo, useId } from 'react';
 import { motion } from 'framer-motion';
 
 interface Props<T extends string> {
@@ -9,7 +9,7 @@ interface Props<T extends string> {
 }
 
 /** Choices with a sliding marker. Wraps on small screens so none is hidden. */
-export function SegmentedControl<T extends string>({ label, value, options, onChange }: Props<T>) {
+function Control<T extends string>({ label, value, options, onChange }: Props<T>) {
   const id = useId();
   return (
     <div role="group" aria-label={label} className="flex max-w-full flex-wrap gap-1 self-start rounded-2xl bg-raised p-1">
@@ -37,3 +37,6 @@ export function SegmentedControl<T extends string>({ label, value, options, onCh
     </div>
   );
 }
+
+/** Re-renders only when its value or options change: keep "options" the same array. */
+export const SegmentedControl = memo(Control) as typeof Control;
